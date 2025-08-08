@@ -1,44 +1,54 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>SEA Trend — Shopee 셀러용 인기 상품 리포트</title>
-  <link rel="stylesheet" href="styles.css" />
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SEA Trend – 쇼피 셀러 트렌드</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="styles.css"/>
 </head>
 <body>
-  <header class="topbar">
-    <h1>SEA Trend</h1>
-    <div class="controls">
-      <label>국가
-        <select id="country">
-          <option value="TH">태국</option>
-          <option value="PH">필리핀</option>
-          <option value="MY">말레이시아</option>
-        </select>
-      </label>
-      <label>카테고리
-        <select id="category">
-          <option value="beauty">뷰티</option>
-          <option value="electronics">전자</option>
-          <option value="health">헬스</option>
-          <option value="accessories">액세서리</option>
-        </select>
-      </label>
-      <button id="refresh">불러오기</button>
-      <label class="toggle">
-        <input type="checkbox" id="unlockToggle" />
-        <span>유료 해제(테스트)</span>
-      </label>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">SEA <span>Trend</span></div>
+      <nav class="header-actions">
+        <a href="admin.html" class="btn ghost">관리자</a>
+        <a href="#" class="btn primary small" id="subscribeBtn">유료 구독</a>
+      </nav>
+    </div>
+    <div class="wrap filters">
+      <div class="filter-row">
+        <label>국가
+          <select id="country">
+            <option value="TH">태국</option>
+            <option value="PH">필리핀</option>
+            <option value="MY">말레이시아</option>
+          </select>
+        </label>
+        <label>카테고리
+          <select id="category">
+            <option value="beauty">뷰티</option>
+            <option value="electronics">전자</option>
+            <option value="health">헬스</option>
+            <option value="accessories">액세서리</option>
+          </select>
+        </label>
+        <button id="refresh" class="btn">불러오기</button>
+        <label class="unlock">
+          <input type="checkbox" id="unlockToggle"><span>유료 해제(데모)</span>
+        </label>
+      </div>
     </div>
   </header>
 
-  <main>
-    <section id="list"></section>
+  <main class="wrap content">
+    <section id="list" class="grid"></section>
   </main>
 
-  <footer>
-    <p>© 2025 SEA Trend — Shopee 셀러 전용 데이터(샘플)</p>
+  <footer class="site-footer">
+    <div class="wrap">© 2025 SEA Trend — 한국 셀러 전용 데이터</div>
   </footer>
 
   <script src="app.js"></script>

@@ -4,8 +4,9 @@
       {
         "rank": 10,
         "name": "Innisfree Green Tea Seed Serum 80ml",
-        "category": "Beauty",
-        "why": "수분/민감 피부에 적합, TH 더위에 인기",
+        "image_url": "https://via.placeholder.com/640x480?text=Innisfree",
+        "category": "뷰티",
+        "why": "수분/민감 피부에 적합, 더운 기후에 인기",
         "overseas_price": "฿790",
         "overseas_link": "https://shopee.co.th/",
         "kr_price": "₩19,900",
@@ -16,7 +17,8 @@
       {
         "rank": 9,
         "name": "Mamonde Rose Water Toner 250ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=Mamonde",
+        "category": "뷰티",
         "why": "대용량 토너 수요",
         "overseas_price": "฿350",
         "overseas_link": "https://shopee.co.th/",
@@ -28,7 +30,8 @@
       {
         "rank": 8,
         "name": "Etude SoonJung pH5.5 Toner 200ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=Etude",
+        "category": "뷰티",
         "why": "민감성·진정",
         "overseas_price": "฿420",
         "overseas_link": "https://shopee.co.th/",
@@ -40,7 +43,8 @@
       {
         "rank": 7,
         "name": "Neogen Real Ferment Micro Essence 150ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=Neogen",
+        "category": "뷰티",
         "why": "발효·광채",
         "overseas_price": "฿950",
         "overseas_link": "https://shopee.co.th/",
@@ -52,7 +56,8 @@
       {
         "rank": 6,
         "name": "Missha Time Revolution Cream 50ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=Missha",
+        "category": "뷰티",
         "why": "영양·리프팅",
         "overseas_price": "฿1,090",
         "overseas_link": "https://shopee.co.th/",
@@ -64,7 +69,8 @@
       {
         "rank": 5,
         "name": "Torriden Dive‑In Soothing Cream 100ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=Torriden",
+        "category": "뷰티",
         "why": "저분자 HA, 고습도 환경 최적",
         "overseas_price": "฿980",
         "overseas_link": "https://shopee.co.th/",
@@ -76,7 +82,8 @@
       {
         "rank": 4,
         "name": "Beauty of Joseon Relief Sun 50ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=BOJ+Sun",
+        "category": "뷰티",
         "why": "가벼운 사용감 + 고SPF",
         "overseas_price": "฿949",
         "overseas_link": "https://www.watsons.co.th/",
@@ -88,7 +95,8 @@
       {
         "rank": 3,
         "name": "COSRX Snail 96 Mucin Essence 100ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=COSRX+Snail",
+        "category": "뷰티",
         "why": "스테디셀러, 리뷰 다수",
         "overseas_price": "฿820",
         "overseas_link": "https://www.watsons.co.th/",
@@ -100,7 +108,8 @@
       {
         "rank": 2,
         "name": "Round Lab Birch Sun Cream 50ml",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=Round+Lab+Sun",
+        "category": "뷰티",
         "why": "보습 선케어",
         "overseas_price": "฿1,450",
         "overseas_link": "https://www.watsons.co.th/",
@@ -112,7 +121,8 @@
       {
         "rank": 1,
         "name": "TIRTIR Mask Fit Red Cushion",
-        "category": "Beauty",
+        "image_url": "https://via.placeholder.com/640x480?text=TIRTIR+Red+Cushion",
+        "category": "뷰티",
         "why": "SNS 바이럴, 커버력",
         "overseas_price": "฿1,200",
         "overseas_link": "https://shopee.co.th/",
@@ -122,11 +132,5 @@
         "risk": "색상 재고"
       }
     ]
-  },
-  "PH": {
-    "beauty": []
-  },
-  "MY": {
-    "beauty": []
   }
 }

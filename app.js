@@ -8,84 +8,81 @@ const categorySel = document.getElementById('category');
 async function loadData() {
   const country = countrySel.value;
   const category = categorySel.value;
-  const resp = await fetch('data.json?ts=' + Date.now());
-  const all = await resp.json();
+  try{
+    const resp = await fetch('data.json?ts=' + Date.now());
+    const all = await resp.json();
+    const items = (all[country] && all[country][category]) ? all[country][category] : [];
+    render(items);
+  }catch(e){
+    listEl.innerHTML = '<div class="card"><div class="body">data.json을 불러오지 못했습니다.</div></div>';
+  }
+}
 
-  const items = (all[country] && all[country][category]) ? all[country][category] : [];
-  render(items);
+function escapeHtml(str){
+  return (str||'').replace(/[&<>"]/g, s => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[s]));
 }
 
 function render(items){
   if(!Array.isArray(items) || items.length === 0){
-    listEl.innerHTML = '<p style="opacity:.8">데이터가 없습니다. 관리자에서 업로드하세요.</p>';
+    listEl.innerHTML = '<div class="card"><div class="body">데이터가 없습니다. 관리자(admin.html)에서 data.json을 수정해 업로드하세요.</div></div>';
     return;
   }
-  const grid = document.createElement('div');
-  grid.className = 'grid';
-
-  // Sort by rank just in case
   items.sort((a,b)=> a.rank - b.rank);
-
+  listEl.innerHTML = '';
   items.forEach(it => {
-    const card = document.createElement('div');
+    const card = document.createElement('article');
     card.className = 'card';
 
-    const r = document.createElement('div');
-    r.className = 'rank';
-    r.textContent = `#${it.rank}`;
-    card.appendChild(r);
+    const img = document.createElement('img');
+    img.className = 'thumb';
+    img.alt = it.name || '';
+    img.src = it.image_url || 'https://via.placeholder.com/640x480?text=Product';
+    card.appendChild(img);
+
+    const rank = document.createElement('div');
+    rank.className = 'rank';
+    rank.textContent = `#${it.rank}`;
+    card.appendChild(rank);
+
+    const body = document.createElement('div');
+    body.className = 'body';
 
     const title = document.createElement('div');
     title.className = 'title';
     title.textContent = it.name;
-    card.appendChild(title);
+    body.appendChild(title);
 
     const meta = document.createElement('div');
     meta.className = 'meta';
-    meta.innerHTML = `<span>${it.category}</span> · <span>${it.why}</span>`;
-    card.appendChild(meta);
+    meta.textContent = `${it.category} · ${it.why || ''}`;
+    body.appendChild(meta);
+
+    const rows = document.createElement('div');
+    rows.className = 'rows';
+    rows.innerHTML = `
+      <div class="row"><strong>해외가</strong><span class="price">${escapeHtml(it.overseas_price||'-')}</span><br><a class="link" href="${it.overseas_link||'#'}" target="_blank">상세보기</a></div>
+      <div class="row"><strong>국내 최저가</strong><span class="price">${escapeHtml(it.kr_price||'-')}</span><br><a class="link" href="${it.kr_link||'#'}" target="_blank">구매 링크</a></div>
+    `;
+    body.appendChild(rows);
 
     const badges = document.createElement('div');
     badges.className = 'badges';
-    if (it.margin_note) {
-      const b = document.createElement('span');
-      b.className = 'badge';
-      b.textContent = `마진: ${it.margin_note}`;
-      badges.appendChild(b);
-    }
-    if (it.risk) {
-      const b2 = document.createElement('span');
-      b2.className = 'badge';
-      b2.textContent = `리스크: ${it.risk}`;
-      badges.appendChild(b2);
-    }
-    card.appendChild(badges);
+    if (it.margin_note) badges.innerHTML += `<span class="badge good">마진: ${escapeHtml(it.margin_note)}</span>`;
+    if (it.risk) badges.innerHTML += `<span class="badge warn">주의: ${escapeHtml(it.risk)}</span>`;
+    body.appendChild(badges);
 
-    const pricebox = document.createElement('div');
-    pricebox.className = 'pricebox';
-    const p1 = document.createElement('div');
-    p1.className = 'price';
-    p1.innerHTML = `<strong>해외가</strong>${it.overseas_price || '-'}<br><a href="${it.overseas_link||'#'}" target="_blank">참고 링크</a>`;
-    const p2 = document.createElement('div');
-    p2.className = 'price';
-    p2.innerHTML = `<strong>국내 최저가</strong>${it.kr_price || '-'}<br><a href="${it.kr_link||'#'}" target="_blank">구매 링크</a>`;
-    pricebox.appendChild(p1);
-    pricebox.appendChild(p2);
-    card.appendChild(pricebox);
+    card.appendChild(body);
 
-    // Lock top 5 when not unlocked
+    // Lock top 5
     if(!unlockToggle.checked && it.rank <= 5){
       const lock = document.createElement('div');
       lock.className = 'lock';
-      lock.innerHTML = `<span>유료 구독 시 열람 가능 (#${it.rank})</span>`;
+      lock.innerHTML = `<div>유료 구독 시 열람 가능 (#${it.rank})</div>`;
       card.appendChild(lock);
     }
 
-    grid.appendChild(card);
+    listEl.appendChild(card);
   });
-
-  listEl.innerHTML = '';
-  listEl.appendChild(grid);
 }
 
 refreshBtn.addEventListener('click', loadData);
@@ -93,5 +90,4 @@ unlockToggle.addEventListener('change', loadData);
 countrySel.addEventListener('change', loadData);
 categorySel.addEventListener('change', loadData);
 
-// initial
 loadData();

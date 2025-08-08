@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SEA Trend — 관리자</title>
+  <link rel="stylesheet" href="styles.css"/>
+  <style>
+    .admin{max-width:1200px;margin:24px auto;padding:0 16px}
+    .box{background:#fff;border:1px solid var(--line);border-radius:12px;box-shadow:0 2px 8px rgba(22,34,57,0.05);padding:16px}
+    .row{display:flex;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+    textarea{width:100%;min-height:380px;background:#fff;color:#111;border:1px solid var(--line);border-radius:10px;padding:12px;font-family: ui-monospace, Menlo, Monaco, Consolas, 'Courier New', monospace}
+    .note{color:var(--muted);font-size:13px}
+    .btns{display:flex;gap:8px;margin:10px 0}
+    input[type="file"]{display:none}
+    .filelabel{border:1px dashed #b7c7df;padding:8px 12px;border-radius:10px;cursor:pointer;background:#f8fbff}
+  </style>
+</head>
+<body>
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <div class="brand">SEA <span>Trend</span> — 관리자</div>
+      <nav class="header-actions">
+        <a class="btn ghost" href="index.html">사이트로 돌아가기</a>
+      </nav>
+    </div>
+  </header>
+
+  <main class="admin">
+    <div class="box">
+      <h2 style="margin:0 0 8px">data.json 편집</h2>
+      <div class="note">아래 JSON을 수정 후 <b>다운로드</b>해서 GitHub에 덮어쓰면 Vercel이 자동 배포합니다. (이미지 URL도 함께 입력 가능)</div>
+      <div class="btns">
+        <label class="filelabel">
+          <input type="file" id="fileInput" accept="application/json"/>
+          파일 불러오기
+        </label>
+        <button class="btn" id="formatBtn">서식 정리</button>
+        <button class="btn primary" id="downloadBtn">data.json 다운로드</button>
+      </div>
+      <textarea id="editor"></textarea>
+    </div>
+  </main>
+
+  <script>
+    const editor = document.getElementById('editor');
+    const fileInput = document.getElementById('fileInput');
+    const formatBtn = document.getElementById('formatBtn');
+    const downloadBtn = document.getElementById('downloadBtn');
+
+    fetch('data.json?ts=' + Date.now()).then(r=>r.json()).then(j=>{
+      editor.value = JSON.stringify(j, null, 2);
+    }).catch(()=>{
+      editor.value = '{\n  "TH": {"beauty": []}\n}';
+    });
+
+    fileInput.addEventListener('change', async (e)=>{
+      const f = e.target.files[0];
+      if(!f) return;
+      const text = await f.text();
+      editor.value = text;
+    });
+
+    formatBtn.addEventListener('click', ()=>{
+      try{
+        const obj = JSON.parse(editor.value);
+        editor.value = JSON.stringify(obj, null, 2);
+        alert('서식 정리 완료');
+      }catch(e){
+        alert('JSON 문법 오류: ' + e.message);
+      }
+    });
+
+    downloadBtn.addEventListener('click', ()=>{
+      try{
+        const obj = JSON.parse(editor.value);
+        const blob = new Blob([JSON.stringify(obj, null, 2)], {type:'application/json'});
+        const a = document.createElement('a');
+        a.href = URL.createObjectURL(blob);
+        a.download = 'data.json';
+        a.click();
+      }catch(e){
+        alert('JSON 문법 오류: ' + e.message);
+      }
+    });
+  </script>
+</body>
+</html>
