@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SEA Trend — Shopee 셀러용 인기 상품 리포트</title>
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <h1>SEA Trend</h1>
+    <div class="controls">
+      <label>국가
+        <select id="country">
+          <option value="TH">태국</option>
+          <option value="PH">필리핀</option>
+          <option value="MY">말레이시아</option>
+        </select>
+      </label>
+      <label>카테고리
+        <select id="category">
+          <option value="beauty">뷰티</option>
+          <option value="electronics">전자</option>
+          <option value="health">헬스</option>
+          <option value="accessories">액세서리</option>
+        </select>
+      </label>
+      <button id="refresh">불러오기</button>
+      <label class="toggle">
+        <input type="checkbox" id="unlockToggle" />
+        <span>유료 해제(테스트)</span>
+      </label>
+    </div>
+  </header>
+
+  <main>
+    <section id="list"></section>
+  </main>
+
+  <footer>
+    <p>© 2025 SEA Trend — Shopee 셀러 전용 데이터(샘플)</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
