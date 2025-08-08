@@ -73,7 +73,6 @@ function render(items){
 
     card.appendChild(body);
 
-    // Lock top 5
     if(!unlockToggle.checked && it.rank <= 5){
       const lock = document.createElement('div');
       lock.className = 'lock';

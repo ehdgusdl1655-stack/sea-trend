@@ -29,7 +29,7 @@
   <main class="admin">
     <div class="box">
       <h2 style="margin:0 0 8px">data.json 편집</h2>
-      <div class="note">아래 JSON을 수정 후 <b>다운로드</b>해서 GitHub에 덮어쓰면 Vercel이 자동 배포합니다. (이미지 URL도 함께 입력 가능)</div>
+      <div class="note">아래 JSON을 수정 후 <b>다운로드</b>해서 GitHub에 덮어쓰면 Vercel이 자동 배포합니다. (이미지 URL/링크/가격 입력)</div>
       <div class="btns">
         <label class="filelabel">
           <input type="file" id="fileInput" accept="application/json"/>
@@ -51,7 +51,7 @@
     fetch('data.json?ts=' + Date.now()).then(r=>r.json()).then(j=>{
       editor.value = JSON.stringify(j, null, 2);
     }).catch(()=>{
-      editor.value = '{\n  "TH": {"beauty": []}\n}';
+      editor.value = '{\n  "TH": {"beauty": [], "accessories": [], "electronics": [], "health": []}\n}';
     });
 
     fileInput.addEventListener('change', async (e)=>{
