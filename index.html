@@ -1,9 +1,8 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>SEA Trend – 쇼피 셀러 트렌드</title>
+  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>SEA Trend — 국가별 20개 큐레이션</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
@@ -12,43 +11,39 @@
 <body>
   <header class="site-header">
     <div class="wrap header-inner">
-      <div class="brand">SEA <span>Trend</span></div>
+      <div class="brand">SEA <span>Trend</span> — 20개 큐레이션</div>
       <nav class="header-actions">
-        <a href="admin.html" class="btn ghost">관리자</a>
-        <a href="#" class="btn primary small" id="subscribeBtn">유료 구독</a>
+        <a class="btn" href="admin.html">관리자</a>
       </nav>
     </div>
     <div class="wrap filters">
       <div class="filter-row">
         <label>국가
-          <select id="country">
-            <option value="TH">태국</option>
-          </select>
-        </label>
-        <label>카테고리
-          <select id="category">
-            <option value="beauty">뷰티</option>
-            <option value="accessories">액세서리</option>
-            <option value="electronics">전자</option>
-            <option value="health">헬스</option>
-          </select>
+          <select id="country"></select>
         </label>
         <button id="refresh" class="btn">불러오기</button>
-        <label class="unlock">
-          <input type="checkbox" id="unlockToggle"><span>유료 해제(데모)</span>
-        </label>
+        <div style="margin-left:auto">업데이트: <span id="asOf" class="note">-</span></div>
       </div>
     </div>
   </header>
 
-  <main class="wrap content">
-    <section id="list" class="grid"></section>
+  <main class="wrap">
+    <div class="section">
+      <h3>🔥 인기상품 Top 10</h3>
+      <section id="top" class="grid"></section>
+    </div>
+    <div class="section">
+      <h3>📈 검색량 상승 예상 5</h3>
+      <section id="rising" class="grid"></section>
+    </div>
+    <div class="section">
+      <h3>🕶️ 닌자 제품 5 (숨은 수익템)</h3>
+      <section id="ninja" class="grid"></section>
+    </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap">© 2025 SEA Trend — 한국 셀러 전용 데이터</div>
-  </footer>
+  <footer><div class="wrap">© 2025 SEA Trend</div></footer>
 
-  <script src="app.js"></script>
+  <script src="main.js"></script>
 </body>
 </html>
