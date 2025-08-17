@@ -1,49 +1,29 @@
 <!DOCTYPE html>
 <html lang="ko">
 <head>
-  <meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1"/>
-  <title>SEA Trend — 국가별 20개 큐레이션</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;600;700&display=swap" rel="stylesheet">
-  <link rel="stylesheet" href="styles.css"/>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>SeaTrend</title>
+  <link rel="stylesheet" href="assets/css/styles.css" />
+  <script defer src="assets/js/seed.js"></script>
+  <script defer src="assets/js/member.js"></script>
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap header-inner">
-      <div class="brand">SEA <span>Trend</span> — 20개 큐레이션</div>
-      <nav class="header-actions">
-        <a class="btn" href="admin.html">관리자</a>
-      </nav>
-    </div>
-    <div class="wrap filters">
-      <div class="filter-row">
-        <label>국가
-          <select id="country"></select>
-        </label>
-        <button id="refresh" class="btn">불러오기</button>
-        <div style="margin-left:auto">업데이트: <span id="asOf" class="note">-</span></div>
-      </div>
+  <header class="header">
+    <h1 class="logo"><span class="sea">SEA</span>Trend</h1>
+    <div class="header-actions">
+      <button id="consultBtn" class="btn btn-outline">문의</button>
     </div>
   </header>
 
-  <main class="wrap">
-    <div class="section">
-      <h3>🔥 인기상품 Top 10</h3>
-      <section id="top" class="grid"></section>
-    </div>
-    <div class="section">
-      <h3>📈 검색량 상승 예상 5</h3>
-      <section id="rising" class="grid"></section>
-    </div>
-    <div class="section">
-      <h3>🕶️ 닌자 제품 5 (숨은 수익템)</h3>
-      <section id="ninja" class="grid"></section>
-    </div>
+  <main class="container">
+    <div id="notice" class="notice"></div>
+    <section id="productGrid" class="grid"></section>
   </main>
 
-  <footer><div class="wrap">© 2025 SEA Trend</div></footer>
-
-  <script src="main.js"></script>
+  <footer class="footer">
+    <div>© 2025 SeaTrend</div>
+    <!-- 회원페이지: 관리자 링크 없음 -->
+  </footer>
 </body>
 </html>
