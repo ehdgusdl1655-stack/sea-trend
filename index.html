@@ -3,27 +3,38 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>SeaTrend</title>
+  <title>SEATREND | 회원 페이지</title>
+  <link rel="icon" href="assets/img/favicon.ico" />
   <link rel="stylesheet" href="assets/css/styles.css" />
-  <script defer src="assets/js/seed.js"></script>
   <script defer src="assets/js/member.js"></script>
 </head>
 <body>
   <header class="header">
-    <h1 class="logo"><span class="sea">SEA</span>Trend</h1>
-    <div class="header-actions">
-      <button id="consultBtn" class="btn btn-outline">문의</button>
+    <div class="logo"><img src="assets/img/logo.svg" alt="SEATREND" style="height:30px" /></div>
+    <div class="actions">
+      <a id="inquiryBtn" class="btn" href="https://open.kakao.com/o/sCgmH4Mh">문의</a>
     </div>
   </header>
 
   <main class="container">
-    <div id="notice" class="notice"></div>
-    <section id="productGrid" class="grid"></section>
+    <div id="notice" class="muted" style="margin:6px 2px"></div>
+    <section id="grid" class="grid"></section>
   </main>
 
   <footer class="footer">
-    <div>© 2025 SeaTrend</div>
-    <!-- 회원페이지: 관리자 링크 없음 -->
+    <div>© 2025 SEATREND</div>
+    <div class="muted">고객문의: help@sea-trend.com</div>
   </footer>
+
+  <!-- Detail Modal -->
+  <div id="detailModal" class="modal">
+    <div class="backdrop" onclick="window.ST.closeDetail()"></div>
+    <div class="panel card">
+      <button class="btn close" onclick="window.ST.closeDetail()">닫기</button>
+      <div id="detailBody"></div>
+    </div>
+  </div>
+
+  <script id="PRODUCTS_EMBED" type="application/json">[]</script>
 </body>
 </html>
