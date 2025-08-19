@@ -1,64 +1,106 @@
-const KEY='seatrend_products_v2'; const KCONS='seatrend_consult_url';
-let editingId=null;
-function $(id){return document.getElementById(id)}; function load(){return JSON.parse(localStorage.getItem(KEY)||'[]')}; function save(a){localStorage.setItem(KEY,JSON.stringify(a))};
-function fmt(n){ if(n===undefined||n===null||n==='') return ''; return Number(n).toLocaleString(); }
-function refreshTable(){
-  const tbody=document.querySelector('#productTable tbody'); const arr=load().sort((a,b)=>(a.rank||999)-(b.rank||999));
-  tbody.innerHTML='';
-  arr.forEach(p=>{
-    const tr=document.createElement('tr');
-    tr.innerHTML=`<td>${p.rank||''}</td>
-      <td><img src="${p.image_url||''}" alt=""></td>
-      <td>${p.name||''}</td>
-      <td>${p.country||''}</td>
-      <td>${p.category||''}</td>
-      <td>${fmt(p.local_price)} ${p.currency||''}</td>
-      <td>${(p.hot||p.steady)?'블라인드':'공개'}</td>
-      <td>${p.tags||''}</td>
-      <td>${p.hot?'HOT ':''}${p.steady?'STEADY':''}</td>
-      <td><button class="btn btn-outline" data-act="edit" data-id="${p.id}">수정</button>
-          <button class="btn btn-danger" data-act="del" data-id="${p.id}">삭제</button></td>`;
-    tbody.appendChild(tr);
+
+(function(){
+  const KEY='seatrend_products_v2';
+  const Q=(s,d=document)=>d.querySelector(s);
+  const toast=(msg)=>{ const t=Q('#toast'); if(!t) return; t.textContent=msg; t.classList.add('show'); setTimeout(()=>t.classList.remove('show'), 1400); };
+  const fmt=(n)=> (n===undefined||n===null||n==='')?'-':Number(n).toLocaleString();
+
+  function read(){ try{ return JSON.parse(localStorage.getItem(KEY)||'[]'); }catch(e){ return []; } }
+  function write(arr){ localStorage.setItem(KEY, JSON.stringify(arr)); }
+
+  function formToObj(){
+    return {
+      rank: Number(Q('#rank').value||0),
+      name: Q('#name').value.trim(),
+      image_url: Q('#image_url').value.trim(),
+      local_price: Number(Q('#local_price').value||0),
+      currency: Q('#currency').value.trim(),
+      category: Q('#category')?.value.trim() || '',
+      country: Q('#country')?.value.trim() || '',
+      tags: Q('#tags')?.value.trim() || '',
+      desc: Q('#desc')?.value.trim() || '',
+      product_url: Q('#product_url')?.value.trim() || '',
+      coupang_price: Number(Q('#coupang_price')?.value||0) || '',
+      coupang_url: Q('#coupang_url')?.value.trim() || '',
+      naver_price: Number(Q('#naver_price')?.value||0) || '',
+      naver_url: Q('#naver_url')?.value.trim() || '',
+      other_label: Q('#other_label')?.value.trim() || '',
+      other_price: Number(Q('#other_price')?.value||0) || '',
+      other_url: Q('#other_url')?.value.trim() || '',
+    };
+  }
+  function fillForm(p){
+    ['rank','name','image_url','local_price','currency','category','country','tags','desc','product_url','coupang_price','coupang_url','naver_price','naver_url','other_label','other_price','other_url']
+    .forEach(id=>{ if(Q('#'+id)) Q('#'+id).value = (p[id]!==undefined&&p[id]!==null)? p[id] : ''; });
+  }
+  function clearForm(){ Q('#form').reset(); }
+
+  // ---- Reliable server commit queue (from previous build) ----
+  let __commitLock = false;
+  let __pending = null;
+
+  async function refreshFromServer(){
+    try{
+      const r = await fetch('https://sea-trend.com/api/products', { cache:'no-store' });
+      const o = await r.json();
+      if(o && Array.isArray(o.products)){
+        write(o.products); render();
+      }
+    }catch(e){ /* ignore */ }
+  }
+
+  async function commitProducts(products){
+    __pending = products;
+    if(__commitLock) return;
+    __commitLock = true;
+    try{
+      while(__pending){
+        const snap = __pending; __pending = null;
+        const r = await fetch('https://sea-trend.com/api/products', { method:'POST', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ products: snap }) });
+        const o = await r.json().catch(()=>({}));
+        if(!(r.ok && (o.success || o.ok))){
+          throw new Error((o && (o.error||o.message)) || ('HTTP '+r.status));
+        }
+        await refreshFromServer();
+        try{ const bc = new BroadcastChannel('seatrend_sync'); bc.postMessage({type:'products_updated', ts: Date.now()}); }catch(e){}
+      }
+    }catch(err){
+      toast('서버 반영 실패'); console.log(err);
+    }finally{
+      __commitLock = false;
+    }
+  }
+
+  function render(){
+    const list = read().slice().sort((a,b)=> (a.rank||999)-(b.rank||999));
+    const tb=Q('#table tbody'); tb.innerHTML='';
+    list.forEach((p,i)=>{
+      const tr=document.createElement('tr');
+      tr.innerHTML = `<td>${p.rank||''}</td><td>${p.name||''}</td><td>${fmt(p.local_price)}</td><td>${p.currency||''}</td>
+        <td><button class="btn" data-edit="${i}">수정</button> <button class="btn" data-del="${i}">삭제</button></td>`;
+      tb.appendChild(tr);
+    });
+    tb.querySelectorAll('[data-edit]').forEach(b=> b.addEventListener('click', (e)=>{
+      const idx=Number(e.currentTarget.getAttribute('data-edit'));
+      const p=read()[idx]; if(p) fillForm(p);
+      window.scrollTo({ top: 0, behavior:'smooth' });
+    }));
+    tb.querySelectorAll('[data-del]').forEach(b=> b.addEventListener('click', (e)=>{
+      const idx=Number(e.currentTarget.getAttribute('data-del'));
+      const arr=read(); arr.splice(idx,1); write(arr); render(); toast('삭제 완료'); commitProducts(arr);
+    }));
+  }
+
+  Q('#form').addEventListener('submit', (e)=>{
+    e.preventDefault();
+    const p=formToObj();
+    if(!p.name || !p.image_url || !p.local_price || !p.currency){ toast('필수값을 입력하세요'); return; }
+    const arr=read();
+    const existIdx = arr.findIndex(x=> x.name===p.name && x.image_url===p.image_url);
+    if(existIdx>=0){ arr[existIdx]=p; write(arr); render(); toast('수정 완료'); commitProducts(arr); }
+    else { arr.push(p); write(arr); render(); toast('등록 완료'); commitProducts(arr); }
   });
-}
-function toForm(p){
-  $('rank').value=p.rank||''; $('name').value=p.name||''; $('image_url').value=p.image_url||''; $('country').value=p.country||'';
-  $('category').value=p.category||'Beauty'; $('local_price').value=p.local_price||''; $('currency').value=p.currency||'THB';
-  $('coupang_price').value=p.coupang_price||''; $('coupang_url').value=p.coupang_url||''; $('naver_price').value=p.naver_price||''; $('naver_url').value=p.naver_url||'';
-  $('other_label').value=p.other_label||'올리브영'; $('other_price').value=p.other_price||''; $('other_url').value=p.other_url||'';
-  $('visibility').value=p.visibility||'public'; $('tags').value=p.tags||''; $('desc').value=p.desc||''; $('hot').checked=!!p.hot; $('steady').checked=!!p.steady;
-  previewImage();
-}
-function fromForm(){
-  const rank=parseInt($('rank').value||''); let visibility=$('visibility').value; const hot=$('hot').checked; const steady=$('steady').checked;
-  if(hot||steady){ visibility='subscriber'; }
-  return { id: editingId||crypto.randomUUID(), rank:isNaN(rank)?null:rank, name:$('name').value.trim(), image_url:$('image_url').value.trim(),
-    country:$('country').value.trim(), category:$('category').value, local_price:Number($('local_price').value||0), currency:$('currency').value,
-    coupang_price:$('coupang_price').value?Number($('coupang_price').value):'', coupang_url:$('coupang_url').value.trim(),
-    naver_price:$('naver_price').value?Number($('naver_price').value):'', naver_url:$('naver_url').value.trim(),
-    other_label:$('other_label').value.trim()||'타사', other_price:$('other_price').value?Number($('other_price').value):'', other_url:$('other_url').value.trim(),
-    visibility, tags:$('tags').value.trim(), desc:$('desc').value.trim(), hot, steady };
-}
-function resetForm(){ editingId=null; $('productForm').reset(); $('category').value='Beauty'; $('currency').value='THB'; $('other_label').value='올리브영'; $('imgPreview').src=''; $('imgStatus').textContent=''; }
-function previewImage(){ const url=$('image_url').value.trim(); const img=$('imgPreview'); const st=$('imgStatus'); if(!url){img.src='';st.textContent='';return}
-  img.onload=()=>{st.textContent='이미지 로드 성공'; st.style.color='#16a34a'}; img.onerror=()=>{st.textContent='이미지 로드 실패 (URL 확인)'; st.style.color='#ef4444'}; img.src=url; }
-function handleSubmit(e){ e.preventDefault(); const p=fromForm(); if(p.rank && p.rank<=13 && !(p.hot||p.steady)){ p.visibility='public'; }
-  const arr=load(); const idx=arr.findIndex(x=>x.id===p.id); if(idx>=0){arr[idx]=p}else{arr.push(p)}; save(arr); resetForm(); refreshTable(); alert('저장 완료! 회원 페이지에 즉시 반영됩니다.'); }
-function handleTableClick(e){ const act=e.target.getAttribute('data-act'); const id=e.target.getAttribute('data-id'); if(!act||!id)return; const arr=load(); const idx=arr.findIndex(x=>x.id===id); if(idx<0)return;
-  if(act==='edit'){ editingId=id; toForm(arr[idx]); window.scrollTo({top:0,behavior:'smooth'}); } else if(act==='del'){ if(confirm('삭제하시겠어요?')){ arr.splice(idx,1); save(arr); refreshTable(); } } }
-function importCsv(){ const file=$('csvFile').files[0]; if(!file){alert('CSV 파일을 선택하세요'); return;} const reader=new FileReader();
-  reader.onload=()=>{ const text=reader.result.trim(); const rows=text.split(/\r?\n/).filter(Boolean); const header=rows.shift().split(',').map(h=>h.trim()); const map={}; header.forEach((h,i)=> map[h]=i);
-    const arr=load(); rows.forEach(line=>{ const c=line.split(',').map(x=>x.trim()); const o={ id:crypto.randomUUID(),
-      rank:c[map.rank]?Number(c[map.rank]):null, name:c[map.name]||'', image_url:c[map.image_url]||'', country:c[map.country]||'',
-      category:c[map.category]||'Beauty', local_price: c[map.local_price]?Number(c[map.local_price]):0, currency:c[map.currency]||'THB',
-      coupang_price:c[map.coupang_price]?Number(c[map.coupang_price]):'', coupang_url:c[map.coupang_url]||'',
-      naver_price:c[map.naver_price]?Number(c[map.naver_price]):'', naver_url:c[map.naver_url]||'',
-      other_label:c[map.other_label]||'타사', other_price:c[map.other_price]?Number(c[map.other_price]):'', other_url:c[map.other_url]||'',
-      visibility:(c[map.visibility]||'public'), hot:(c[map.hot]||'').toLowerCase()==='true', steady:(c[map.steady]||'').toLowerCase()==='true',
-      desc:c[map.desc]||'', tags:c[map.tags]||'' };
-      if(o.hot||o.steady) o.visibility='subscriber'; if(o.rank && o.rank<=13 && !(o.hot||o.steady)) o.visibility='public'; arr.push(o); });
-    save(arr); refreshTable(); alert('CSV 업로드 완료!'); }; reader.readAsText(file,'utf-8'); }
-function saveConsult(){ const u=$('consultUrl').value.trim(); localStorage.setItem(KCONS,u); alert('문의 URL 저장'); }
-window.addEventListener('DOMContentLoaded',()=>{ $('productForm').addEventListener('submit',handleSubmit); $('resetForm').addEventListener('click',resetForm);
-  $('image_url').addEventListener('input',previewImage); document.getElementById('productTable').addEventListener('click',handleTableClick);
-  document.getElementById('importCsv').addEventListener('click',importCsv); document.getElementById('saveConsult').addEventListener('click',saveConsult); refreshTable(); });
+  Q('#resetBtn').addEventListener('click', ()=>{ clearForm(); });
+
+  window.addEventListener('DOMContentLoaded', ()=>{ render(); refreshFromServer(); });
+})();

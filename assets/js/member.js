@@ -1,54 +1,142 @@
-const KEY='seatrend_products_v2'; const KCONS='seatrend_consult_url';
-function fmt(n){ if(n===undefined||n===null||n==='') return '-'; return Number(n).toLocaleString(); }
-function mkBadge(label, price, url){
-  const a = document.createElement(url?'a':'span');
-  a.className = 'badge' + (url?' link':'');
-  if(url){ a.href=url; a.target='_blank'; }
-  a.textContent = `${label}: ${price? fmt(price)+'원' : (url?'바로가기':'—')}`;
-  return a;
-}
-function render(){
-  const list = JSON.parse(localStorage.getItem(KEY) || '[]').sort((a,b)=> (a.rank||999)-(b.rank||999));
-  const grid = document.getElementById('productGrid');
-  grid.innerHTML='';
-  list.forEach(p=>{
-    const blind = (p.hot||p.steady) || p.visibility==='subscriber';
-    const card = document.createElement('article');
-    card.className = 'card product' + (blind?' blind':'');
 
-    const status = document.createElement('div'); status.className='status';
-    if(p.hot){ const s=document.createElement('span'); s.className='pill hot'; s.textContent='인기 급상승'; status.appendChild(s); }
-    if(p.steady){ const s=document.createElement('span'); s.className='pill steady'; s.textContent='효자 상품'; status.appendChild(s); }
-    card.appendChild(status);
+(function(){
+  const KEY='seatrend_products_v2';
+  const API_ABS = 'https://sea-trend.com';
+  const Q=(s,d=document)=>d.querySelector(s);
+  const fmt=(n)=> (n===undefined||n===null||n==='')?'-':Number(n).toLocaleString();
+  const state={ list:[], settings:null };
 
-    const imgWrap = document.createElement('div'); imgWrap.className='imgwrap';
-    const img = new Image(); img.src=p.image_url; img.alt=p.name; imgWrap.appendChild(img); card.appendChild(imgWrap);
+  async function tryFetch(url){
+    try{
+      const r = await fetch(url, { cache:'no-store' });
+      if(!r.ok) return null;
+      const d = await r.json().catch(()=>null);
+      return d;
+    }catch(e){ return null; }
+  }
 
-    const h3 = document.createElement('h3'); h3.textContent = `${p.rank?('#'+p.rank+' '):''}${p.name}`; card.appendChild(h3);
+  async function loadProducts(){
+    // 1) absolute server
+    let d = await tryFetch(API_ABS + '/api/products');
+    if(d && Array.isArray(d.products) && d.products.length){ state.list = d.products; localStorage.setItem(KEY, JSON.stringify(state.list)); return; }
+    // 2) same-origin relative (in case we're on sea-trend.com already)
+    d = await tryFetch('/api/products');
+    if(d && Array.isArray(d.products) && d.products.length){ state.list = d.products; localStorage.setItem(KEY, JSON.stringify(state.list)); return; }
+    // 3) localStorage
+    try{
+      const raw = localStorage.getItem(KEY);
+      if(raw){ const arr = JSON.parse(raw); if(Array.isArray(arr) && arr.length){ state.list = arr; return; } }
+    }catch(e){}
+    // 4) embedded
+    try{
+      const el = Q('#PRODUCTS_EMBED');
+      if(el && el.textContent.trim()){ const arr = JSON.parse(el.textContent); if(Array.isArray(arr) && arr.length){ state.list = arr; return; } }
+    }catch(e){}
+    // nothing found → keep empty
+    state.list = [];
+  }
 
-    const labels = document.createElement('div'); labels.className='labels';
-    if(p.country){ const t=document.createElement('span'); t.className='tag'; t.textContent=p.country; labels.appendChild(t); }
-    if(p.category){ const t=document.createElement('span'); t.className='tag'; t.textContent=p.category; labels.appendChild(t); }
-    if(p.tags){ p.tags.split(',').forEach(x=>{ if(x.trim()){ const t=document.createElement('span'); t.className='tag'; t.textContent=x.trim(); labels.appendChild(t); } }); }
-    card.appendChild(labels);
+  async function loadSettings(){
+    let d = await tryFetch(API_ABS + '/api/settings');
+    if(!(d && d.inquiry)){ d = await tryFetch('/api/settings'); }
+    state.settings = d || null;
+  }
 
-    const prices = document.createElement('div'); prices.className='prices';
-    const row = document.createElement('div'); row.className='price-row';
-    const sea = document.createElement('span'); sea.className='badge'; sea.textContent=`현지가: ${fmt(p.local_price)} ${p.currency||''}`; row.appendChild(sea);
-    row.appendChild(mkBadge('쿠팡', p.coupang_price, p.coupang_url));
-    row.appendChild(mkBadge('네이버', p.naver_price, p.naver_url));
-    row.appendChild(mkBadge(p.other_label||'타사', p.other_price, p.other_url));
-    prices.appendChild(row); card.appendChild(prices);
+  function applySettings(){
+    const s = state.settings || {};
+    const btn = Q('#inquiryBtn');
+    if(!btn) return;
+    if(s.inquiry && s.inquiry.show===false){ btn.style.display='none'; }
+    if(s.inquiry && s.inquiry.url){ btn.href = s.inquiry.url; }
+    if(s.inquiry && s.inquiry.label){ btn.textContent = s.inquiry.label; }
+  }
 
-    const desc = document.createElement('div'); desc.className='desc muted'; desc.textContent=p.desc||''; card.appendChild(desc);
+  function openDetail(p){
+    const body=Q('#detailBody');
+    const goto = p.product_url || p.coupang_url || p.naver_url || p.other_url || '';
+    body.innerHTML = `
+      <div class="detail-grid">
+        <div class="thumb" style="height:260px"><img src="${p.image_url||''}" alt="${p.name||''}"/></div>
+        <div>
+          <div class="title" style="font-size:20px">${p.name||''}</div>
+          <div class="muted">${p.country||''} · ${p.category||''}</div>
+          <div class="local-row">
+            <div class="local-label">현지 판매가</div>
+            <div class="local-price pro"><span class="cur">${(p.currency||'KRW').toUpperCase()}</span><span class="amount">${fmt(p.local_price)}</span></div>
+          </div>
+          <div class="labels">
+            ${p.tags? p.tags.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join(''): ''}
+          </div>
+        </div>
+      </div>
+      <div class="detail-section">
+        <h3 class="detail-title">상세 설명</h3>
+        <div class="muted" style="white-space:pre-line">${p.desc||'상세 설명이 없습니다.'}</div>
+      </div>
+      <div class="detail-section">
+        <h3 class="detail-title">가격 & 바로가기</h3>
+        <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:6px">
+          ${p.coupang_url? `<a class="badge link" href="${p.coupang_url}" target="_blank">쿠팡 ${p.coupang_price?fmt(p.coupang_price)+'원':''}</a>`:''}
+          ${p.naver_url? `<a class="badge link" href="${p.naver_url}" target="_blank">네이버 ${p.naver_price?fmt(p.naver_price)+'원':''}</a>`:''}
+          ${p.other_url? `<a class="badge link" href="${p.other_url}" target="_blank">${p.other_label||'타사'} ${p.other_price?fmt(p.other_price)+'원':''}</a>`:''}
+          ${goto? `<a class="btn" target="_blank" href="${goto}">바로가기</a>`:''}
+        </div>
+        <div class="disclosure">* 일부 링크는 파트너스 링크일 수 있으며, 이를 통해 구매 시 SEATREND가 일정 수수료를 받을 수 있습니다.</div>
+      </div>`;
+    Q('#detailModal').classList.add('show');
+    document.body.style.overflow='hidden';
+  }
+  function closeDetail(){ Q('#detailModal').classList.remove('show'); document.body.style.overflow=''; }
+  window.ST = { openDetail, closeDetail };
 
-    grid.appendChild(card);
+  function render(){
+    const grid=Q('#grid'); if(!grid) return;
+    grid.innerHTML='';
+    const list=(state.list||[]).slice().sort((a,b)=>(a.rank||999)-(b.rank||999));
+    const notice=Q('#notice'); if(notice) notice.textContent = `총 ${list.length}개 상품`;
+    if(!list.length){
+      // show friendly empty state instead of blank page
+      const div=document.createElement('div');
+      div.className='muted'; div.style.margin='8px 2px';
+      div.textContent='등록된 상품이 없습니다.';
+      grid.parentElement && grid.parentElement.insertBefore(div, grid.nextSibling);
+      return;
+    }
+    list.forEach(p=>{
+      const card=document.createElement('article'); card.className='card product';
+      card.innerHTML = `
+        <div class="thumb"><img src="${p.image_url||''}" alt="${p.name||''}"></div>
+        <div class="title">${p.name||''}</div>
+        <div class="muted">· ${p.category||''}</div>
+        <div class="local-row"><div class="local-label">현지 판매가</div>
+          <div class="local-price pro"><span class="cur">${(p.currency||'KRW').toUpperCase()}</span><span class="amount">${fmt(p.local_price)}</span></div>
+        </div>
+        <div class="labels">
+          ${p.tags? p.tags.split(',').map(t=>`<span class="tag">${t.trim()}</span>`).join(''): ''}
+        </div>
+        <div class="row"><a href="#" class="badge link detail">제품 상세 설명</a></div>`;
+      card.querySelector('.detail').addEventListener('click', (e)=>{ e.preventDefault(); openDetail(p); });
+      grid.appendChild(card);
+    });
+  }
+
+  async function boot(){
+    await loadProducts();
+    await loadSettings();
+    applySettings();
+    render();
+  }
+
+  window.addEventListener('DOMContentLoaded', async ()=>{
+    await boot();
+    // if still empty after 1s, try again (covers CDN/edge latency)
+    setTimeout(()=>{ if(!state.list || !state.list.length){ boot(); } }, 1000);
   });
-}
-function hookConsult(){
-  const url = localStorage.getItem(KCONS);
-  const btn = document.getElementById('consultBtn');
-  if(url){ btn.onclick = ()=> window.open(url,'_blank'); } else { btn.disabled=true; btn.title='관리자에서 문의 URL을 설정하세요'; }
-}
-window.addEventListener('storage', (e)=>{ if(e.key===KEY||e.key===KCONS){ render(); hookConsult(); } });
-window.addEventListener('DOMContentLoaded', ()=>{ render(); hookConsult(); });
+
+  // live sync from admin
+  try{
+    const bc = new BroadcastChannel('seatrend_sync');
+    bc.onmessage = (msg)=>{ if(msg && msg.data && msg.data.type==='products_updated'){ boot(); } };
+  }catch(e){}
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState==='visible'){ boot(); }});
+})();
